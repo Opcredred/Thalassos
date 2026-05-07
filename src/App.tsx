@@ -47,14 +47,44 @@ export default function App() {
     { name: "About", href: "/about", isLink: true },
   ];
 
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScrollEvent = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScrollEvent);
+    return () => window.removeEventListener("scroll", handleScrollEvent);
+  }, []);
+
+  const handleScroll = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, href: string) => {
+    if (href.startsWith("#")) {
+      e.preventDefault();
+      const element = document.querySelector(href);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+        setIsMobileMenuOpen(false);
+      }
+    }
+  };
+
   return (
     <div className="relative min-h-screen bg-[#0A0A0A] text-white font-sans selection:bg-blue-500/30 flex flex-col">
       <GlassFilter />
       {/* Translucent Island Navbar */}
-      <div className="fixed top-4 sm:top-6 left-0 right-0 z-[100] flex justify-center w-full pointer-events-none px-4">
+      <div className={cn(
+        "fixed left-0 right-0 z-[100] flex justify-center w-full pointer-events-none px-4 transition-all duration-500",
+        isScrolled ? "top-2 sm:top-4" : "top-4 sm:top-6"
+      )}>
         <div className="pointer-events-auto w-full max-w-fit">
-          <GlassEffect className="rounded-full !bg-white/10 backdrop-blur-md">
-            <nav className="flex items-center gap-3 sm:gap-8 px-4 sm:px-6 py-2 sm:py-3 rounded-full shadow-2xl">
+          <GlassEffect className={cn(
+            "rounded-full transition-all duration-500 shadow-2xl",
+            isScrolled ? "!bg-black/60 backdrop-blur-2xl border border-white/20" : "!bg-white/10 backdrop-blur-md"
+          )}>
+            <nav className={cn(
+              "flex items-center gap-3 sm:gap-8 px-4 sm:px-6 rounded-full transition-all duration-500",
+              isScrolled ? "py-1 sm:py-2" : "py-2 sm:py-3"
+            )}>
               <div className="flex items-center pr-2">
                  <span className="font-bold text-lg sm:text-xl tracking-tight text-white">Thalassos</span>
               </div>
@@ -66,7 +96,14 @@ export default function App() {
                   link.isLink ? (
                     <Link key={link.name} to={link.href} className="hover:text-white transition-colors">{link.name}</Link>
                   ) : (
-                    <a key={link.name} href={link.href} className="hover:text-white transition-fluid-hover">{link.name}</a>
+                    <a 
+                      key={link.name} 
+                      href={link.href} 
+                      onClick={(e) => handleScroll(e, link.href)}
+                      className="hover:text-white transition-fluid-hover"
+                    >
+                      {link.name}
+                    </a>
                   )
                 ))}
               </div>
@@ -74,7 +111,11 @@ export default function App() {
               <div className="h-4 w-[1px] bg-white/20 hidden sm:block"></div>
 
               <div className="flex items-center gap-2 sm:gap-3">
-                <a href="#contact" className="px-4 py-1.5 h-auto bg-white text-black hover:bg-white/90 text-[10px] sm:text-xs font-bold rounded-full transition-fluid-hover uppercase shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                <a 
+                  href="#contact" 
+                  onClick={(e) => handleScroll(e, "#contact")}
+                  className="px-4 py-1.5 h-auto bg-white text-black hover:bg-white/90 text-[10px] sm:text-xs font-bold rounded-full transition-fluid-hover uppercase shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                >
                   Contact
                 </a>
                 <button 
@@ -115,7 +156,7 @@ export default function App() {
                       key={link.name} 
                       href={link.href} 
                       className="text-lg font-bold text-white/80 hover:text-white tracking-widest uppercase py-2 border-b border-white/5"
-                      onClick={() => setIsMobileMenuOpen(false)}
+                      onClick={(e) => handleScroll(e, link.href)}
                     >
                       {link.name}
                     </a>
